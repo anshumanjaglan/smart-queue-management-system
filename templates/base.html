@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartQueue - Intelligent Queue & Wait-Time Prediction{% endblock %}</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+    <!-- Header Navigation -->
+    <header class="navbar-header border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <a href="{{ url_for('index') }}" class="flex items-center space-x-2 text-decoration-none">
+                    <div class="logo-icon bg-gradient-to-tr from-indigo-500 to-emerald-400 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                        <i class="fa-solid fa-users-rays text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-xl tracking-tight text-white">Smart<span class="text-emerald-400">Queue</span></span>
+                        <span class="ml-2 text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-medium">AI & ML Powered</span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                <a href="{{ url_for('customer_portal') }}" class="nav-link {% if request.endpoint == 'customer_portal' %}active{% endif %}">
+                    <i class="fa-solid fa-ticket-simple mr-1.5"></i> Customer Portal
+                </a>
+                <a href="{{ url_for('staff_portal') }}" class="nav-link {% if request.endpoint == 'staff_portal' %}active{% endif %}">
+                    <i class="fa-solid fa-desktop mr-1.5"></i> Staff Counter
+                </a>
+                <a href="{{ url_for('display_board') }}" class="nav-link {% if request.endpoint == 'display_board' %}active{% endif %}">
+                    <i class="fa-solid fa-tv mr-1.5"></i> Public Display
+                </a>
+                <a href="{{ url_for('admin_portal') }}" class="nav-link {% if request.endpoint == 'admin_portal' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-line mr-1.5"></i> Peak Analytics & ML
+                </a>
+            </nav>
+
+            <!-- Status Indicator & Notification Log Modal Button -->
+            <div class="flex items-center space-x-3">
+                <button onclick="openNotificationModal()" class="btn-secondary text-xs flex items-center space-x-1.5 py-1.5 px-3 rounded-lg border border-slate-700 hover:border-slate-600">
+                    <i class="fa-solid fa-bell text-amber-400"></i>
+                    <span class="hidden sm:inline">SMS & Call Feed</span>
+                </button>
+                <div class="flex items-center space-x-1 text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                    <span class="pulse-dot"></span>
+                    <span class="font-medium">System Online</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Notification Feed Modal -->
+    <div id="notificationModal" class="modal-backdrop hidden">
+        <div class="modal-card">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-comment-sms text-indigo-400 text-lg"></i>
+                    <h3 class="font-bold text-lg text-white">Live SMS & Call Dispatch Log</h3>
+                </div>
+                <button onclick="closeNotificationModal()" class="text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-400 mt-2 mb-3">
+                Every time an employee marks an order complete at their terminal, the automated SMS and Voice Call events are audited here and dispatched to the customer.
+            </p>
+            <div id="notificationFeedContainer" class="space-y-2.5 max-h-96 overflow-y-auto pr-1">
+                <div class="text-center text-slate-500 py-6 text-sm">Loading dispatch history...</div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-800 flex justify-end">
+                <button onclick="closeNotificationModal()" class="btn-secondary py-1.5 px-4 text-xs">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container for Live Audio/Visual Chimes -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-3 pointer-events-none"></div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div>SmartQueue &bull; Intelligent Queue Management & Waiting-Time Prediction System</div>
+            <div class="flex items-center space-x-4">
+                <span>SDG 9: Industry & Innovation</span>
+                <span>&bull;</span>
+                <span>SDG 11: Sustainable Communities</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Audio element for notification chime -->
+    <audio id="chimeAudio" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        // Global Notification Modal and Audio Chime helpers
+        async function fetchNotificationLogs() {
+            try {
+                const res = await fetch('/api/notifications/logs');
+                const data = await res.json();
+                const container = document.getElementById('notificationFeedContainer');
+                if (!data.logs || data.logs.length === 0) {
+                    container.innerHTML = `<div class="text-center text-slate-500 py-6 text-sm">No notification dispatches yet. Complete an order at the Staff Counter to test!</div>`;
+                    return;
+                }
+                container.innerHTML = data.logs.map(log => `
+                    <div class="p-3 rounded-lg border ${log.type === 'SMS' ? 'border-indigo-500/20 bg-indigo-950/20' : 'border-emerald-500/20 bg-emerald-950/20'} text-xs">
+                        <div class="flex items-center justify-between font-semibold mb-1">
+                            <span class="flex items-center space-x-1.5">
+                                <i class="${log.type === 'SMS' ? 'fa-solid fa-comment text-indigo-400' : 'fa-solid fa-phone text-emerald-400'}"></i>
+                                <span class="text-white">${log.type} to ${log.customer_phone} (${log.customer_name || 'Customer'})</span>
+                            </span>
+                            <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold ${log.status === 'SENT' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}">
+                                ${log.status}
+                            </span>
+                        </div>
+                        <div class="text-slate-300 mt-1 font-mono text-[11px] bg-slate-900/60 p-2 rounded border border-slate-800">${log.message_body}</div>
+                        <div class="text-slate-500 text-[10px] mt-1.5 flex justify-between">
+                            <span>Token: <strong class="text-slate-300">${log.token_number}</strong> &bull; Outlet: ${log.outlet_name || 'Counter'}</span>
+                            <span>${log.sent_at}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Error loading notification logs:", err);
+            }
+        }
+
+        function openNotificationModal() {
+            document.getElementById('notificationModal').classList.remove('hidden');
+            fetchNotificationLogs();
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notificationModal').classList.add('hidden');
+        }
+
+        function triggerSystemChime() {
+            const audio = document.getElementById('chimeAudio');
+            if (audio) {
+                audio.play().catch(e => console.log("Audio play blocked by browser policy"));
+            }
+        }
+
+        function showToast(title, message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const icon = type === 'success' ? 'fa-check-circle text-emerald-400' : (type === 'alert' ? 'fa-bell text-amber-400' : 'fa-circle-info text-indigo-400');
+            toast.className = `p-4 rounded-xl border border-slate-700 bg-slate-900/95 shadow-2xl backdrop-blur max-w-sm pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0 flex items-start space-x-3`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-lg mt-0.5"></i>
+                <div class="flex-1 text-xs">
+                    <div class="font-bold text-white text-sm">${title}</div>
+                    <div class="text-slate-300 mt-0.5">${message}</div>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

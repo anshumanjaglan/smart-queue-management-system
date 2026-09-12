@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Peak Analytics & ML Dashboard - SmartQueue{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header with Action -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white flex items-center space-x-3">
+                <i class="fa-solid fa-chart-line text-sky-400"></i>
+                <span>Queue Analytics & ML Insights</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                Historical queue analysis to identify peak rush periods and evaluate Scikit-learn wait-time predictions.
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <button onclick="retrainMLModel()" id="btnRetrainModel" class="btn-primary text-xs py-2 px-3.5">
+                <i class="fa-solid fa-arrows-rotate mr-1.5"></i> Retrain ML Model
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Summary Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="stat-card">
+            <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
+                <span>Total Served</span>
+                <i class="fa-solid fa-users-viewfinder text-indigo-400"></i>
+            </div>
+            <div id="kpiTotalServed" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">--</div>
+            <div class="text-[10px] text-emerald-400 mt-1">Completed tokens</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
+                <span>Currently Active</span>
+                <i class="fa-solid fa-hourglass-start text-amber-400"></i>
+            </div>
+            <div id="kpiActiveTokens" class="text-2xl sm:text-3xl font-extrabold text-white font-mono">--</div>
+            <div class="text-[10px] text-slate-400 mt-1">Waiting in line</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
+                <span>Peak Rush Hour</span>
+                <i class="fa-solid fa-fire text-rose-400"></i>
+            </div>
+            <div id="kpiPeakHour" class="text-2xl sm:text-3xl font-extrabold text-rose-400 font-mono">--</div>
+            <div class="text-[10px] text-rose-300/80 mt-1">Highest customer volume</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
+                <span>Avg Wait Time</span>
+                <i class="fa-solid fa-stopwatch text-emerald-400"></i>
+            </div>
+            <div id="kpiAvgWait" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 font-mono">-- m</div>
+            <div class="text-[10px] text-emerald-300/80 mt-1">Across all outlets</div>
+        </div>
+
+        <div class="stat-card col-span-2 lg:col-span-1">
+            <div class="text-xs text-slate-400 mb-1 flex items-center justify-between">
+                <span>Alerts Dispatched</span>
+                <i class="fa-solid fa-comment-dots text-sky-400"></i>
+            </div>
+            <div id="kpiTotalNotifs" class="text-2xl sm:text-3xl font-extrabold text-sky-400 font-mono">--</div>
+            <div class="text-[10px] text-sky-300/80 mt-1">SMS & Voice Calls</div>
+        </div>
+    </div>
+
+    <!-- Charts Row 1: Peak Rush Hours & Wait Time Trend -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Peak Hours Volume Chart -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                <div>
+                    <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                        <i class="fa-solid fa-chart-column text-indigo-400"></i>
+                        <span>Hourly Customer Volume (Peak Rush Detection)</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Identifies busy lunch (12-2 PM) and evening (5-7 PM) rush periods</p>
+                </div>
+            </div>
+            <div class="relative h-64">
+                <canvas id="peakHoursChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Wait Time Trend Chart -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                <div>
+                    <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                        <i class="fa-solid fa-wave-square text-emerald-400"></i>
+                        <span>Average Waiting Time by Hour (Minutes)</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Correlation between queue congestion and customer wait times</p>
+                </div>
+            </div>
+            <div class="relative h-64">
+                <canvas id="waitTimeTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2: Daily Load & Outlet Comparison -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Daily Distribution Chart -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                <div>
+                    <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                        <i class="fa-solid fa-calendar-week text-amber-400"></i>
+                        <span>Weekly Queue Load Distribution</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Aggregated historical traffic by day of week</p>
+                </div>
+            </div>
+            <div class="relative h-60">
+                <canvas id="dailyLoadChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Outlet Performance Comparison -->
+        <div class="card">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+                <div>
+                    <h3 class="font-bold text-white text-base flex items-center space-x-2">
+                        <i class="fa-solid fa-layer-group text-sky-400"></i>
+                        <span>Outlet Performance (Wait vs Service Time)</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-400">Comparative counter processing efficiency</p>
+                </div>
+            </div>
+            <div class="relative h-60">
+                <canvas id="outletPerformanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Machine Learning Model Specs & Metadata Card -->
+    <div class="card border-indigo-500/30 bg-gradient-to-br from-slate-900 to-indigo-950/20">
+        <div class="flex items-center justify-between mb-3 pb-3 border-b border-slate-800">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-microchip text-indigo-400 text-lg"></i>
+                <h3 class="font-bold text-white text-base">Scikit-learn Prediction Engine Status</h3>
+            </div>
+            <span class="badge badge-completed text-xs py-0.5 px-3">Active & Trained</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+                <div class="text-slate-400">Algorithm</div>
+                <div class="font-bold text-white text-sm mt-0.5">RandomForestRegressor</div>
+            </div>
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+                <div class="text-slate-400">Training Samples</div>
+                <div id="mlSampleSize" class="font-bold text-white text-sm mt-0.5">--</div>
+            </div>
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+                <div class="text-slate-400">Model Accuracy (R² Score)</div>
+                <div id="mlR2Score" class="font-bold text-emerald-400 text-sm mt-0.5">--</div>
+            </div>
+            <div class="p-3 bg-slate-950/60 rounded-lg border border-slate-800">
+                <div class="text-slate-400">Mean Absolute Error</div>
+                <div id="mlMAE" class="font-bold text-sky-400 text-sm mt-0.5">-- mins</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

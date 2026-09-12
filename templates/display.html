@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Public Display Board - SmartQueue{% endblock %}
+
+{% block head %}
+<style>
+    .display-serving-box {
+        background: linear-gradient(135deg, #1e1b4b 0%, #090d16 100%);
+        border: 2px solid #6366f1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Display Header -->
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+            <h1 class="text-3xl font-extrabold text-white flex items-center space-x-3">
+                <i class="fa-solid fa-tv text-amber-400"></i>
+                <span>Queue Public Status Board</span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Live cafeteria & service counter display screen. Real-time updates for waiting patrons.
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <div id="liveClock" class="text-xl font-bold font-mono text-emerald-400 bg-slate-950 px-4 py-1.5 rounded-lg border border-slate-800">
+                --:--:--
+            </div>
+            <button onclick="toggleFullscreen()" class="btn-secondary text-xs py-2 px-3">
+                <i class="fa-solid fa-expand mr-1"></i> Fullscreen
+            </button>
+        </div>
+    </div>
+
+    <!-- Outlets Grid -->
+    <div id="displayBoardGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="card text-center py-12 text-slate-500 col-span-full">
+            <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
+            <div>Loading live display board data...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/display.js') }}"></script>
+{% endblock %}

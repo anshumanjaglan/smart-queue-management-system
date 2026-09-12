@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Counter Terminal - SmartQueue{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Top Bar with Outlet Selection & Quick Stats -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-white flex items-center space-x-2">
+                <i class="fa-solid fa-cash-register text-emerald-400"></i>
+                <span>Staff Counter Terminal</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-400 mt-1">
+                Manage counter queue, call customers, and mark orders complete to trigger automated SMS & Voice Call alerts.
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-3 w-full md:w-auto">
+            <label class="text-xs text-slate-400 font-semibold whitespace-nowrap">Counter / Outlet:</label>
+            <select id="staffOutletSelect" class="form-select text-sm py-2 max-w-xs">
+                {% for outlet in outlets %}
+                    <option value="{{ outlet.id }}">{{ outlet.name }} ({{ outlet.counter_number }})</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Active Serving Station (Hero Card) -->
+    <div id="activeServingCard" class="card border-emerald-500/30 bg-gradient-to-br from-slate-900 to-slate-950">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <!-- Left: Current Token Info -->
+            <div class="space-y-2 flex-1">
+                <div class="flex items-center space-x-2 text-xs">
+                    <span class="badge badge-called text-xs py-0.5 px-3">
+                        <span class="pulse-dot mr-1.5"></span> Counter In Progress
+                    </span>
+                    <span id="currentCounterBadge" class="text-slate-400 font-medium">Counter 1</span>
+                </div>
+
+                <div class="flex items-baseline space-x-4">
+                    <span id="servingTokenNumber" class="text-5xl font-extrabold text-white font-mono">--</span>
+                    <div>
+                        <div id="servingCustomerName" class="text-xl font-bold text-slate-200">No active customer called</div>
+                        <div id="servingCustomerPhone" class="text-xs text-slate-400 font-mono">Select 'Call Next' below</div>
+                    </div>
+                </div>
+
+                <div id="servingNotesContainer" class="text-xs text-slate-400 mt-1 bg-slate-950/60 px-3 py-2 rounded-lg border border-slate-800 max-w-md">
+                    <strong class="text-slate-300">Order/Request:</strong> <span id="servingNotesText">--</span>
+                </div>
+            </div>
+
+            <!-- Right: Action Buttons -->
+            <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                <button id="btnMarkComplete" onclick="markServingComplete()" class="btn-success text-sm py-3 px-6 shadow-lg shadow-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    <i class="fa-solid fa-check-double mr-2"></i>
+                    <span>Mark Complete & Send SMS / Call</span>
+                </button>
+
+                <button id="btnCallNext" onclick="callNextToken()" class="btn-primary text-sm py-3 px-5">
+                    <i class="fa-solid fa-bullhorn mr-2"></i>
+                    <span>Call Next Customer</span>
+                </button>
+
+                <button id="btnNoShow" onclick="markServingNoShow()" class="btn-secondary text-sm py-3 px-4 text-rose-400 hover:text-white disabled:opacity-50" disabled>
+                    <i class="fa-solid fa-user-xmark mr-1.5"></i>
+                    <span>No Show</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Waiting Queue Table -->
+    <div class="card">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-list-ol text-indigo-400"></i>
+                <h3 class="font-bold text-lg text-white">Active Waiting Queue (<span id="waitingCount">0</span>)</h3>
+            </div>
+            <div class="text-xs text-slate-400 flex items-center space-x-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>Auto-refreshes live</span>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Token #</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Pref</th>
+                        <th>Order Notes</th>
+                        <th>Joined At</th>
+                        <th>Est. Wait</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="waitingQueueTbody">
+                    <tr>
+                        <td colspan="8" class="text-center text-slate-500 py-6">Loading queue data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/staff.js') }}"></script>
+{% endblock %}

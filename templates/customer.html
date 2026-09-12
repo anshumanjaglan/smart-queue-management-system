@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Customer Portal - SmartQueue{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <!-- Header -->
+    <div class="text-center">
+        <h1 class="text-3xl font-extrabold text-white">Digital Token & Live Status Tracker</h1>
+        <p class="text-sm text-slate-400 mt-1">
+            Join the queue digitally, monitor live wait times, and receive an SMS or Call update when your order is ready.
+        </p>
+    </div>
+
+    <!-- Registration Section (Shown when no active token) -->
+    <div id="joinQueueSection" class="card max-w-xl mx-auto">
+        <div class="flex items-center space-x-2.5 mb-5 pb-3 border-b border-slate-800">
+            <div class="p-2 bg-indigo-500/20 text-indigo-400 rounded-lg">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-bold text-white">Join Queue</h2>
+                <p class="text-xs text-slate-400">Fill in your details to get an instant digital token</p>
+            </div>
+        </div>
+
+        <form id="joinQueueForm" class="space-y-4">
+            <div class="form-group">
+                <label class="form-label" for="outletSelect">
+                    <i class="fa-solid fa-store mr-1 text-slate-400"></i> Select Outlet / Counter
+                </label>
+                <select id="outletSelect" class="form-select" required>
+                    <option value="" disabled selected>-- Choose an outlet / department --</option>
+                    {% for outlet in outlets %}
+                        <option value="{{ outlet.id }}" data-counter="{{ outlet.counter_number }}">
+                            {{ outlet.name }} ({{ outlet.counter_number }} - {{ outlet.service_type }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="form-group">
+                    <label class="form-label" for="customerName">
+                        <i class="fa-solid fa-user mr-1 text-slate-400"></i> Your Name
+                    </label>
+                    <input type="text" id="customerName" class="form-input" placeholder="e.g. Rahul Sharma" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="customerPhone">
+                        <i class="fa-solid fa-phone mr-1 text-slate-400"></i> Phone (for SMS/Call)
+                    </label>
+                    <input type="tel" id="customerPhone" class="form-input" placeholder="+91 9876543210" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fa-solid fa-bell mr-1 text-slate-400"></i> Notification Preference
+                </label>
+                <div class="grid grid-cols-3 gap-3 text-xs">
+                    <label class="flex items-center space-x-2 p-2.5 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer hover:border-slate-500">
+                        <input type="radio" name="notificationPref" value="both" checked class="text-indigo-600">
+                        <span>Both SMS & Call</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2.5 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer hover:border-slate-500">
+                        <input type="radio" name="notificationPref" value="sms" class="text-indigo-600">
+                        <span>SMS Only</span>
+                    </label>
+                    <label class="flex items-center space-x-2 p-2.5 rounded-lg border border-slate-700 bg-slate-900 cursor-pointer hover:border-slate-500">
+                        <input type="radio" name="notificationPref" value="call" class="text-indigo-600">
+                        <span>Voice Call Only</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="orderNotes">
+                    <i class="fa-solid fa-clipboard-list mr-1 text-slate-400"></i> Order / Service Details (Optional)
+                </label>
+                <input type="text" id="orderNotes" class="form-input" placeholder="e.g. 2x Veg Thali, 1x Tea / Fee Slip Verification">
+            </div>
+
+            <button type="submit" id="btnSubmitToken" class="btn-primary w-full py-3 text-sm">
+                <i class="fa-solid fa-ticket mr-2"></i> Join Queue & Get Digital Token
+            </button>
+        </form>
+    </div>
+
+    <!-- Active Token Live Tracking View (Initially Hidden) -->
+    <div id="liveTrackingSection" class="hidden space-y-6 max-w-2xl mx-auto">
+        <div class="token-hero">
+            <div class="flex items-center justify-between text-xs text-slate-400 mb-2">
+                <span id="displayOutletName" class="font-bold text-white uppercase tracking-wider">Campus Canteen</span>
+                <span id="displayCounterNumber" class="bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full font-semibold">Counter 1</span>
+            </div>
+
+            <div class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-2">Your Token Number</div>
+            <div id="displayTokenNumber" class="token-number-lg">CAN-101</div>
+
+            <div class="mt-2">
+                <span id="displayStatusBadge" class="badge badge-waiting text-sm py-1 px-4">
+                    <i class="fa-solid fa-clock mr-1.5"></i> Waiting in Queue
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mt-6">
+                <!-- Waiting Time Card -->
+                <div class="wait-time-box">
+                    <div class="text-xs text-slate-400 mb-1">
+                        <i class="fa-solid fa-hourglass-half text-amber-400 mr-1"></i> ML Estimated Wait
+                    </div>
+                    <div id="displayEstimatedWait" class="text-3xl font-extrabold text-white font-mono">-- mins</div>
+                    <div class="text-[10px] text-emerald-400 mt-1 font-medium">Scikit-learn AI Prediction</div>
+                </div>
+
+                <!-- People Ahead Card -->
+                <div class="wait-time-box">
+                    <div class="text-xs text-slate-400 mb-1">
+                        <i class="fa-solid fa-users text-indigo-400 mr-1"></i> People Ahead
+                    </div>
+                    <div id="displayPeopleAhead" class="text-3xl font-extrabold text-white font-mono">--</div>
+                    <div class="text-[10px] text-slate-400 mt-1">Live position tracker</div>
+                </div>
+            </div>
+
+            <!-- Automated Notification Alert Notice -->
+            <div id="readyAlertBanner" class="hidden mt-6 p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-left">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-circle-check text-2xl text-emerald-400 mt-0.5"></i>
+                    <div>
+                        <div class="font-bold text-base text-white">Your Order Is READY for Pickup!</div>
+                        <p class="text-xs text-emerald-200/90 mt-0.5">
+                            The counter employee marked this order as complete. An automated SMS and Voice Call update has been triggered to your phone (<span id="customerPhoneNotice"></span>).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- In Waiting Notice -->
+            <div id="waitingNoticeBanner" class="mt-6 p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400 text-left flex items-start space-x-2.5">
+                <i class="fa-solid fa-circle-info text-indigo-400 text-sm mt-0.5"></i>
+                <div class="leading-relaxed">
+                    You do not need to wait physically in line! Feel free to sit comfortably. As soon as the outlet employee marks your order complete, you will receive an immediate SMS or phone call.
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
+                <button onclick="resetCustomerPortal()" class="btn-secondary text-xs">
+                    <i class="fa-solid fa-plus mr-1"></i> Get Another Token
+                </button>
+                <button onclick="cancelActiveToken()" class="btn-danger text-xs">
+                    <i class="fa-solid fa-xmark mr-1"></i> Leave / Cancel Token
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/customer.js') }}"></script>
+{% endblock %}
