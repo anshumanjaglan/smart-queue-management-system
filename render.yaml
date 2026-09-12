@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: smart-queue-management-system
+    env: python
+    buildCommand: "pip install -r requirements.txt && python scripts/seed_data.py"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0

@@ -45,3 +45,10 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE INDEX IF NOT EXISTS idx_tokens_outlet_status ON tokens (outlet_id, status);
 CREATE INDEX IF NOT EXISTS idx_tokens_joined_at ON tokens (joined_at);
 CREATE INDEX IF NOT EXISTS idx_tokens_status ON tokens (status);
+
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+

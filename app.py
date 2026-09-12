@@ -200,6 +200,75 @@ def api_ml_train():
     return jsonify(res)
 
 
+# ----------------- API ROUTES: TELECOM GATEWAYS & SETTINGS ----------------- #
+
+@app.route('/api/settings/telecom', methods=['GET'])
+def api_get_telecom_settings():
+    cfg = Config.get_telecom_config()
+    # Mask secrets for display
+    fast2sms_key = cfg.get('fast2sms_api_key', '')
+    masked_fast2sms = f"{fast2sms_key[:4]}...{fast2sms_key[-4:]}" if len(fast2sms_key) > 8 else fast2sms_key
+    
+    tw_token = cfg.get('twilio_auth_token', '')
+    masked_tw_token = f"{tw_token[:4]}...{tw_token[-4:]}" if len(tw_token) > 8 else tw_token
+
+    return jsonify({
+        "success": True,
+        "config": {
+            "fast2sms_api_key": masked_fast2sms,
+            "fast2sms_configured": bool(fast2sms_key),
+            "twilio_account_sid": cfg.get('twilio_account_sid', ''),
+            "twilio_auth_token": masked_tw_token,
+            "twilio_phone_number": cfg.get('twilio_phone_number', ''),
+            "twilio_configured": bool(cfg.get('twilio_account_sid') and cfg.get('twilio_auth_token')),
+            "active_provider": cfg.get('active_provider', 'auto')
+        }
+    })
+
+@app.route('/api/settings/telecom', methods=['POST'])
+def api_save_telecom_settings():
+    data = request.get_json() or {}
+    
+    fast2sms_key = data.get('fast2sms_api_key', '').strip()
+    if fast2sms_key and not fast2sms_key.startswith('...'):
+        Config.set_setting('fast2sms_api_key', fast2sms_key)
+        
+    tw_sid = data.get('twilio_account_sid', '').strip()
+    if tw_sid:
+        Config.set_setting('twilio_account_sid', tw_sid)
+        
+    tw_token = data.get('twilio_auth_token', '').strip()
+    if tw_token and not tw_token.startswith('...'):
+        Config.set_setting('twilio_auth_token', tw_token)
+        
+    tw_phone = data.get('twilio_phone_number', '').strip()
+    if tw_phone:
+        Config.set_setting('twilio_phone_number', tw_phone)
+        
+    provider = data.get('active_provider', 'auto').strip()
+    if provider:
+        Config.set_setting('active_provider', provider)
+
+    return jsonify({"success": True, "message": "Telecom gateway settings saved successfully."})
+
+@app.route('/api/telecom/test-sms', methods=['POST'])
+def api_test_sms():
+    data = request.get_json() or {}
+    phone = data.get('phone', '').strip()
+    message = data.get('message', 'SmartQueue Test: Real SMS gateway connection successful!').strip()
+
+    if not phone:
+        return jsonify({"success": False, "message": "Phone number is required."}), 400
+
+    result = NotificationService.test_send_sms(phone=phone, message=message)
+    return jsonify({
+        "success": True,
+        "result": result,
+        "message": f"Test SMS processed ({result.get('provider')}: {result.get('status')})"
+    })
+
+
 if __name__ == '__main__':
     print("Starting SmartQueue Server on http://127.0.0.1:5000")
     app.run(host='0.0.0.0', port=5000, debug=True)
+

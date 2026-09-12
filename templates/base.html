@@ -7,7 +7,7 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Main Style -->
@@ -16,18 +16,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     {% block head %}{% endblock %}
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="min-h-screen flex flex-col font-sans">
     <!-- Header Navigation -->
-    <header class="navbar-header border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50">
+    <header class="navbar-header sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <a href="{{ url_for('index') }}" class="flex items-center space-x-2 text-decoration-none">
-                    <div class="logo-icon bg-gradient-to-tr from-indigo-500 to-emerald-400 p-2 rounded-xl text-white shadow-lg shadow-indigo-500/20">
+                <a href="{{ url_for('index') }}" class="flex items-center space-x-2.5 text-decoration-none group">
+                    <div class="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-emerald-400 text-white shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform">
                         <i class="fa-solid fa-users-rays text-xl"></i>
                     </div>
                     <div>
                         <span class="font-extrabold text-xl tracking-tight text-white">Smart<span class="text-emerald-400">Queue</span></span>
-                        <span class="ml-2 text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-medium">AI & ML Powered</span>
+                        <span class="ml-2 text-[10px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wider">AI & ML Engine</span>
                     </div>
                 </a>
             </div>
@@ -35,28 +35,37 @@
             <!-- Nav Links -->
             <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
                 <a href="{{ url_for('customer_portal') }}" class="nav-link {% if request.endpoint == 'customer_portal' %}active{% endif %}">
-                    <i class="fa-solid fa-ticket-simple mr-1.5"></i> Customer Portal
+                    <i class="fa-solid fa-ticket-simple mr-1.5 text-indigo-400"></i> Customer Portal
                 </a>
                 <a href="{{ url_for('staff_portal') }}" class="nav-link {% if request.endpoint == 'staff_portal' %}active{% endif %}">
-                    <i class="fa-solid fa-desktop mr-1.5"></i> Staff Counter
+                    <i class="fa-solid fa-desktop mr-1.5 text-emerald-400"></i> Staff Counter
                 </a>
                 <a href="{{ url_for('display_board') }}" class="nav-link {% if request.endpoint == 'display_board' %}active{% endif %}">
-                    <i class="fa-solid fa-tv mr-1.5"></i> Public Display
+                    <i class="fa-solid fa-tv mr-1.5 text-amber-400"></i> Public Display
                 </a>
                 <a href="{{ url_for('admin_portal') }}" class="nav-link {% if request.endpoint == 'admin_portal' %}active{% endif %}">
-                    <i class="fa-solid fa-chart-line mr-1.5"></i> Peak Analytics & ML
+                    <i class="fa-solid fa-chart-line mr-1.5 text-cyan-400"></i> Peak Analytics & ML
                 </a>
             </nav>
 
-            <!-- Status Indicator & Notification Log Modal Button -->
-            <div class="flex items-center space-x-3">
-                <button onclick="openNotificationModal()" class="btn-secondary text-xs flex items-center space-x-1.5 py-1.5 px-3 rounded-lg border border-slate-700 hover:border-slate-600">
-                    <i class="fa-solid fa-bell text-amber-400"></i>
-                    <span class="hidden sm:inline">SMS & Call Feed</span>
+            <!-- Actions -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Telecom Settings Button -->
+                <button onclick="openTelecomModal()" title="Telecom & Real SMS Gateway Settings" class="btn-secondary text-xs py-1.5 px-3 rounded-lg border border-indigo-500/30 text-indigo-300 hover:text-white hover:border-indigo-500">
+                    <i class="fa-solid fa-satellite-dish mr-1 text-indigo-400"></i>
+                    <span class="hidden sm:inline">SMS & Gateway</span>
                 </button>
-                <div class="flex items-center space-x-1 text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+
+                <!-- Notification Feed Button -->
+                <button onclick="openNotificationModal()" title="View SMS & Call Dispatch History" class="btn-secondary text-xs py-1.5 px-3 rounded-lg">
+                    <i class="fa-solid fa-bell text-amber-400"></i>
+                    <span class="hidden sm:inline ml-1">Dispatch Feed</span>
+                </button>
+
+                <!-- Live Status Badge -->
+                <div class="flex items-center space-x-1.5 text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
                     <span class="pulse-dot"></span>
-                    <span class="font-medium">System Online</span>
+                    <span class="font-semibold hidden lg:inline">Live Online</span>
                 </div>
             </div>
         </div>
@@ -67,20 +76,109 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Telecom / Real SMS Gateway Settings Modal -->
+    <div id="telecomModal" class="modal-backdrop hidden">
+        <div class="modal-card max-w-xl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div class="flex items-center space-x-2.5">
+                    <div class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400">
+                        <i class="fa-solid fa-satellite-dish text-lg"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-white">SMS & Telecom Gateway Setup</h3>
+                        <p class="text-xs text-slate-400">Configure real mobile telecom dispatchers</p>
+                    </div>
+                </div>
+                <button onclick="closeTelecomModal()" class="text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 my-4 max-h-[70vh] overflow-y-auto pr-1 text-xs">
+                <!-- Gateway Selector -->
+                <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
+                    <label class="form-label font-bold text-white text-xs mb-2">Active SMS/Voice Dispatch Provider</label>
+                    <select id="activeProviderSelect" class="form-select text-xs">
+                        <option value="auto">Auto (Fast2SMS for India, Twilio for Global)</option>
+                        <option value="fast2sms">Fast2SMS (Real SMS to Indian mobile numbers)</option>
+                        <option value="twilio">Twilio (Global Real SMS & Automated Voice Calls)</option>
+                        <option value="simulation">Interactive Sound & Audio Speech Synthesis (Default)</option>
+                    </select>
+                </div>
+
+                <!-- Fast2SMS Section (India Free Real SMS) -->
+                <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-white text-xs flex items-center space-x-1.5">
+                            <i class="fa-solid fa-comment-sms text-emerald-400"></i>
+                            <span>Fast2SMS API Key (India Quick SMS)</span>
+                        </span>
+                        <a href="https://www.fast2sms.com" target="_blank" class="text-[11px] text-emerald-400 hover:underline">
+                            Get Free Key <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Provides instant, free physical SMS delivery directly to any Indian (+91) phone number.</p>
+                    <input type="password" id="fast2smsKeyInput" class="form-input text-xs" placeholder="Paste your Fast2SMS API Authorization key here">
+                </div>
+
+                <!-- Twilio Section (Global SMS & Real Voice Calls) -->
+                <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-white text-xs flex items-center space-x-1.5">
+                            <i class="fa-solid fa-phone-volume text-indigo-400"></i>
+                            <span>Twilio API (Global SMS & Real Voice Phone Calls)</span>
+                        </span>
+                        <a href="https://www.twilio.com" target="_blank" class="text-[11px] text-indigo-400 hover:underline">
+                            Twilio Console <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input type="text" id="twilioSidInput" class="form-input text-xs" placeholder="Twilio Account SID">
+                        <input type="password" id="twilioTokenInput" class="form-input text-xs" placeholder="Twilio Auth Token">
+                    </div>
+                    <input type="text" id="twilioPhoneInput" class="form-input text-xs" placeholder="Twilio Phone Number (e.g. +1234567890)">
+                </div>
+
+                <!-- Test SMS Tool -->
+                <div class="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/30 space-y-2">
+                    <div class="font-bold text-indigo-300 text-xs flex items-center space-x-1.5">
+                        <i class="fa-solid fa-paper-plane text-indigo-400"></i>
+                        <span>Test Real SMS Delivery Now</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <input type="tel" id="testPhoneInput" class="form-input text-xs flex-1" placeholder="Enter your mobile number (e.g. 9876543210)">
+                        <button onclick="sendTestSMS()" id="btnSendTestSMS" class="btn-primary py-2 px-3 text-xs whitespace-nowrap">
+                            Send Test SMS
+                        </button>
+                    </div>
+                    <div id="testSmsResult" class="text-[11px] text-slate-400 hidden"></div>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500">Settings saved securely in SQLite database</span>
+                <div class="flex space-x-2">
+                    <button onclick="closeTelecomModal()" class="btn-secondary py-1.5 px-3 text-xs">Cancel</button>
+                    <button onclick="saveTelecomSettings()" id="btnSaveTelecom" class="btn-success py-1.5 px-4 text-xs">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification Feed Modal -->
     <div id="notificationModal" class="modal-backdrop hidden">
         <div class="modal-card">
             <div class="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div class="flex items-center space-x-2">
                     <i class="fa-solid fa-comment-sms text-indigo-400 text-lg"></i>
-                    <h3 class="font-bold text-lg text-white">Live SMS & Call Dispatch Log</h3>
+                    <h3 class="font-bold text-lg text-white">Live SMS & Voice Call Dispatch Log</h3>
                 </div>
                 <button onclick="closeNotificationModal()" class="text-slate-400 hover:text-white text-xl">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <p class="text-xs text-slate-400 mt-2 mb-3">
-                Every time an employee marks an order complete at their terminal, the automated SMS and Voice Call events are audited here and dispatched to the customer.
+                Every time an order is marked complete at the staff counter, the dispatch record (SMS, Voice Call, WhatsApp) is logged here.
             </p>
             <div id="notificationFeedContainer" class="space-y-2.5 max-h-96 overflow-y-auto pr-1">
                 <div class="text-center text-slate-500 py-6 text-sm">Loading dispatch history...</div>
@@ -91,11 +189,43 @@
         </div>
     </div>
 
+    <!-- Interactive Smartphone Incoming Call Overlay (Mind-blowing audio speech simulation!) -->
+    <div id="phoneCallModal" class="modal-backdrop hidden">
+        <div class="phone-call-card">
+            <div class="phone-avatar-ring">
+                <i class="fa-solid fa-phone text-3xl text-white"></i>
+            </div>
+            <div class="text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-1">Incoming Automated Call</div>
+            <div id="callModalCaller" class="text-2xl font-extrabold text-white mb-1">Campus Canteen</div>
+            <div id="callModalCounter" class="text-sm font-semibold text-indigo-300 mb-4">Counter 1</div>
+            
+            <div id="callSpeakingWave" class="hidden my-4 py-2 px-4 rounded-xl bg-slate-900 border border-slate-800">
+                <div class="flex items-center justify-center space-x-1 mb-2">
+                    <span class="inline-block w-1.5 h-6 bg-emerald-400 animate-pulse rounded"></span>
+                    <span class="inline-block w-1.5 h-10 bg-indigo-400 animate-pulse rounded"></span>
+                    <span class="inline-block w-1.5 h-4 bg-emerald-400 animate-pulse rounded"></span>
+                    <span class="inline-block w-1.5 h-8 bg-sky-400 animate-pulse rounded"></span>
+                </div>
+                <div id="callSpeechText" class="text-xs text-slate-300 italic">"Speaking..."</div>
+            </div>
+
+            <div id="callButtonsContainer" class="flex items-center justify-center space-x-8 mt-6">
+                <button onclick="acceptIncomingCall()" class="btn-call-accept" title="Accept Call">
+                    <i class="fa-solid fa-phone"></i>
+                </button>
+                <button onclick="declineIncomingCall()" class="btn-call-decline" title="Decline Call">
+                    <i class="fa-solid fa-phone-slash"></i>
+                </button>
+            </div>
+            <div class="text-[11px] text-slate-500 mt-4">SmartQueue Voice Telephony Dispatcher</div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container for Live Audio/Visual Chimes -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-3 pointer-events-none"></div>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-800 bg-slate-950 py-6 text-center text-xs text-slate-500">
+    <footer class="border-t border-slate-800/80 bg-slate-950/80 py-6 text-center text-xs text-slate-500 mt-auto">
         <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
             <div>SmartQueue &bull; Intelligent Queue Management & Waiting-Time Prediction System</div>
             <div class="flex items-center space-x-4">
@@ -112,7 +242,187 @@
     </audio>
 
     <script>
-        // Global Notification Modal and Audio Chime helpers
+        // Global Telecom, Speech and Notification Logic
+        let activeCallAudioInterval = null;
+        let pendingSpeechText = "";
+
+        async function openTelecomModal() {
+            document.getElementById('telecomModal').classList.remove('hidden');
+            try {
+                const res = await fetch('/api/settings/telecom');
+                const data = await res.json();
+                if (data.success && data.config) {
+                    const c = data.config;
+                    document.getElementById('activeProviderSelect').value = c.active_provider || 'auto';
+                    document.getElementById('fast2smsKeyInput').value = c.fast2sms_api_key || '';
+                    document.getElementById('twilioSidInput').value = c.twilio_account_sid || '';
+                    document.getElementById('twilioTokenInput').value = c.twilio_auth_token || '';
+                    document.getElementById('twilioPhoneInput').value = c.twilio_phone_number || '';
+                }
+            } catch (err) {
+                console.error("Error loading telecom config:", err);
+            }
+        }
+
+        function closeTelecomModal() {
+            document.getElementById('telecomModal').classList.add('hidden');
+        }
+
+        async function saveTelecomSettings() {
+            const btn = document.getElementById('btnSaveTelecom');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Saving...`;
+
+            try {
+                const payload = {
+                    active_provider: document.getElementById('activeProviderSelect').value,
+                    fast2sms_api_key: document.getElementById('fast2smsKeyInput').value,
+                    twilio_account_sid: document.getElementById('twilioSidInput').value,
+                    twilio_auth_token: document.getElementById('twilioTokenInput').value,
+                    twilio_phone_number: document.getElementById('twilioPhoneInput').value
+                };
+
+                const res = await fetch('/api/settings/telecom', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast("Settings Saved", "Telecom gateway settings updated successfully!", "success");
+                    closeTelecomModal();
+                } else {
+                    alert(data.message || "Failed to save settings");
+                }
+            } catch (err) {
+                alert("Error saving settings: " + err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Save Settings`;
+            }
+        }
+
+        async function sendTestSMS() {
+            const phone = document.getElementById('testPhoneInput').value.trim();
+            if (!phone) {
+                alert("Please enter a mobile phone number to test.");
+                return;
+            }
+
+            const btn = document.getElementById('btnSendTestSMS');
+            const resultBox = document.getElementById('testSmsResult');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Sending...`;
+            resultBox.classList.remove('hidden');
+            resultBox.innerHTML = `<span class="text-slate-400">Dispatching test SMS...</span>`;
+
+            try {
+                const res = await fetch('/api/telecom/test-sms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone: phone })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const r = data.result;
+                    resultBox.innerHTML = `
+                        <div class="p-2 rounded bg-slate-900 border border-slate-700 text-xs">
+                            <strong class="text-emerald-400">Result:</strong> Provider: ${r.provider} | Status: <span class="font-bold ${r.status === 'SENT' ? 'text-emerald-300' : 'text-amber-300'}">${r.status}</span>
+                            <div class="text-[10px] text-slate-400 mt-1">${r.message}</div>
+                        </div>
+                    `;
+                } else {
+                    resultBox.innerHTML = `<span class="text-rose-400">${data.message}</span>`;
+                }
+            } catch (err) {
+                resultBox.innerHTML = `<span class="text-rose-400">Error: ${err}</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `Send Test SMS`;
+            }
+        }
+
+        // Realistic Phone Ringing & Web Speech Synthesizer
+        function playPhoneRingtone() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let step = 0;
+                activeCallAudioInterval = setInterval(() => {
+                    const osc1 = audioCtx.createOscillator();
+                    const osc2 = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc1.frequency.value = 440; // US standard ring tone dual-frequency
+                    osc2.frequency.value = 480;
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.5);
+
+                    osc1.connect(gain);
+                    osc2.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc1.start();
+                    osc2.start();
+                    osc1.stop(audioCtx.currentTime + 1.5);
+                    osc2.stop(audioCtx.currentTime + 1.5);
+                }, 3000);
+            } catch (e) {
+                console.log("Web Audio not supported or autoplay restricted:", e);
+            }
+        }
+
+        function stopPhoneRingtone() {
+            if (activeCallAudioInterval) {
+                clearInterval(activeCallAudioInterval);
+                activeCallAudioInterval = null;
+            }
+        }
+
+        function triggerIncomingPhoneCall(callerName, counterName, speechMessage) {
+            document.getElementById('callModalCaller').innerText = callerName;
+            document.getElementById('callModalCounter').innerText = counterName;
+            pendingSpeechText = speechMessage;
+            document.getElementById('callSpeakingWave').classList.add('hidden');
+            document.getElementById('callButtonsContainer').classList.remove('hidden');
+            document.getElementById('phoneCallModal').classList.remove('hidden');
+            playPhoneRingtone();
+        }
+
+        function acceptIncomingCall() {
+            stopPhoneRingtone();
+            document.getElementById('callButtonsContainer').classList.add('hidden');
+            const wave = document.getElementById('callSpeakingWave');
+            wave.classList.remove('hidden');
+            document.getElementById('callSpeechText').innerText = `"${pendingSpeechText}"`;
+
+            // Use browser speech synthesis to physically talk!
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(pendingSpeechText);
+                utterance.rate = 0.95;
+                utterance.pitch = 1.0;
+                utterance.onend = () => {
+                    setTimeout(() => {
+                        document.getElementById('phoneCallModal').classList.add('hidden');
+                    }, 2000);
+                };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                setTimeout(() => {
+                    document.getElementById('phoneCallModal').classList.add('hidden');
+                }, 4000);
+            }
+        }
+
+        function declineIncomingCall() {
+            stopPhoneRingtone();
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            document.getElementById('phoneCallModal').classList.add('hidden');
+        }
+
         async function fetchNotificationLogs() {
             try {
                 const res = await fetch('/api/notifications/logs');
@@ -123,19 +433,19 @@
                     return;
                 }
                 container.innerHTML = data.logs.map(log => `
-                    <div class="p-3 rounded-lg border ${log.type === 'SMS' ? 'border-indigo-500/20 bg-indigo-950/20' : 'border-emerald-500/20 bg-emerald-950/20'} text-xs">
+                    <div class="p-3 rounded-xl border ${log.type === 'SMS' ? 'border-indigo-500/30 bg-indigo-950/20' : 'border-emerald-500/30 bg-emerald-950/20'} text-xs">
                         <div class="flex items-center justify-between font-semibold mb-1">
                             <span class="flex items-center space-x-1.5">
-                                <i class="${log.type === 'SMS' ? 'fa-solid fa-comment text-indigo-400' : 'fa-solid fa-phone text-emerald-400'}"></i>
+                                <i class="${log.type === 'SMS' ? 'fa-solid fa-comment-sms text-indigo-400' : 'fa-solid fa-phone text-emerald-400'}"></i>
                                 <span class="text-white">${log.type} to ${log.customer_phone} (${log.customer_name || 'Customer'})</span>
                             </span>
                             <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold ${log.status === 'SENT' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'}">
                                 ${log.status}
                             </span>
                         </div>
-                        <div class="text-slate-300 mt-1 font-mono text-[11px] bg-slate-900/60 p-2 rounded border border-slate-800">${log.message_body}</div>
-                        <div class="text-slate-500 text-[10px] mt-1.5 flex justify-between">
-                            <span>Token: <strong class="text-slate-300">${log.token_number}</strong> &bull; Outlet: ${log.outlet_name || 'Counter'}</span>
+                        <div class="text-slate-300 mt-1 font-mono text-[11px] bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">${log.message_body}</div>
+                        <div class="text-slate-500 text-[10px] mt-2 flex justify-between">
+                            <span>Token: <strong class="text-slate-200">${log.token_number}</strong> &bull; Outlet: ${log.outlet_name || 'Counter'}</span>
                             <span>${log.sent_at}</span>
                         </div>
                     </div>

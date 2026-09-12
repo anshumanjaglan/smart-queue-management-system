@@ -44,6 +44,7 @@ function updateStaffUI(data) {
 
     const btnComplete = document.getElementById('btnMarkComplete');
     const btnNoShow = document.getElementById('btnNoShow');
+    const btnWhatsApp = document.getElementById('btnServingWhatsApp');
 
     if (calledToken) {
         document.getElementById('servingTokenNumber').innerText = calledToken.token_number;
@@ -53,6 +54,12 @@ function updateStaffUI(data) {
         
         btnComplete.disabled = false;
         btnNoShow.disabled = false;
+
+        // WhatsApp direct link
+        const cleanPhone = calledToken.customer_phone.replace(/\D/g, '');
+        const textMsg = encodeURIComponent(`SmartQueue Alert: Hello ${calledToken.customer_name}! Your token #${calledToken.token_number} at ${outlet.name || 'our counter'} (${outlet.counter_number || 'Counter'}) is READY for pickup! Please proceed to the counter.`);
+        btnWhatsApp.href = `https://wa.me/${cleanPhone}?text=${textMsg}`;
+        btnWhatsApp.classList.remove('hidden');
     } else {
         document.getElementById('servingTokenNumber').innerText = "--";
         document.getElementById('servingCustomerName').innerText = "No active customer called";
@@ -61,6 +68,7 @@ function updateStaffUI(data) {
         
         btnComplete.disabled = true;
         btnNoShow.disabled = true;
+        btnWhatsApp.classList.add('hidden');
     }
 
     // Filter waiting tokens

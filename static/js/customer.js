@@ -105,9 +105,11 @@ async function pollTokenStatus() {
             if (token.status === 'CALLED') {
                 triggerSystemChime();
                 showToast("Now Serving!", `Your token #${token.token_number} is called to ${token.counter_number}!`, "alert");
+                triggerIncomingPhoneCall(token.outlet_name, token.counter_number, `Hello ${token.customer_name}. Your token number ${token.token_number} is called to ${token.counter_number}. Please proceed to the counter.`);
             } else if (token.status === 'COMPLETED') {
                 triggerSystemChime();
                 showToast("Order Ready!", `Your order #${token.token_number} is ready for pickup! SMS/Call notification sent.`, "success");
+                triggerIncomingPhoneCall(token.outlet_name, token.counter_number, `Hello ${token.customer_name}. Your order number ${token.token_number} is now ready for pickup at ${token.counter_number}. Thank you!`);
                 if (pollInterval) clearInterval(pollInterval);
             }
         }
